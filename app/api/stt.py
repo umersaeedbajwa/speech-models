@@ -88,6 +88,7 @@ async def stt_websocket(
                             audio_np = audio_np.reshape(1, -1)
                         tokens = moonshine.generate(audio_np)
                         transcription = tokenizer.decode_batch(tokens)[0].strip()
+                        print(f"Transcription: {transcription}")
                         # Send result
                         await websocket.send_json({
                             "type": "transcription",
