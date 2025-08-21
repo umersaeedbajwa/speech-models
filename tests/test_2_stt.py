@@ -13,7 +13,7 @@ warnings.filterwarnings("ignore")
 load_dotenv()
 
 API_KEY = os.getenv("API_KEY", "testkey")
-
+os.environ["PYTHONPATH"] = "."
 client = TestClient(app)
 
 def test_stt_websocket_from_latest_wav():

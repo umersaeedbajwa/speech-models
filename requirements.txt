@@ -5,9 +5,10 @@ httpx
 python-dotenv
 websockets
 
-kokoro
+huggingface_hub
 ipython
 soundfile
 torch
+kokoro_onnx
 
 useful-moonshine-onnx@git+https://git@github.com/usefulsensors/moonshine.git#subdirectory=moonshine-onnx
