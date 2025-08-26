@@ -39,7 +39,8 @@ async def stt_websocket(
             return False
         audio_np = np.frombuffer(audio_data, dtype=np.int16)
         energy = np.sqrt(np.mean(audio_np.astype(np.float32) ** 2))
-        return energy > STT_SILENCE_THRESHOLD  # Threshold for detecting speech vs silence
+        print(f" Audio Data:{audio_data} , Audio energy: {energy}, Silence threshold: {STT_SILENCE_THRESHOLD}")
+        return energy > STT_SILENCE_THRESHOLD
 
     try:
         while True:
