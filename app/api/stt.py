@@ -11,7 +11,7 @@ from app.service.stt import get_stt_model
 load_dotenv()
 
 STT_REPO = os.getenv("STT_REPO")
-STT_CHUNK_DURATION = float(os.getenv("STT_CHUNK_DURATION", 0.6))  # 600ms like ReplyOnPause
+STT_CHUNK_DURATION = float(os.getenv("STT_CHUNK_DURATION", 0.4))  # 400ms like ReplyOnPause
 STT_STARTED_THRESHOLD = float(os.getenv("STT_STARTED_THRESHOLD", 0.2))  # 200ms speech to start
 STT_SPEECH_THRESHOLD = float(os.getenv("STT_SPEECH_THRESHOLD", 0.1))  # 100ms speech to continue
 
