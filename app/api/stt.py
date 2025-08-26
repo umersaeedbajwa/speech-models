@@ -45,16 +45,20 @@ async def stt_websocket(
         if energy <= STT_SILENCE_THRESHOLD:
             return False  # Definitely silence
         
-        if len(audio_data) > 0:
-            small_audio_np = np.frombuffer(audio_data, dtype=np.int16)
-            try:
-                transcription = moonshine.stt((sample_rate, small_audio_np))
-                return transcription and transcription.strip() != ""
-            except:
-                # If STT fails on small chunk, fall back to energy threshold
-                return True
+        # For small chunks, trust the energy threshold to avoid STT errors
+        # Minimum 1 second of audio for reliable STT processing
+        min_audio_samples = sample_rate  # 1 second at current sample rate
+        if len(audio_np) < min_audio_samples:
+            return energy > STT_SILENCE_THRESHOLD * 2  # Higher threshold for small chunks
         
-        return False
+        # For larger chunks, we can safely use STT for verification
+        try:
+            transcription = moonshine.stt((sample_rate, audio_np))
+            return transcription and transcription.strip() != ""
+        except Exception as e:
+            print(f"STT error in silence detection: {e}")
+            # If STT fails, fall back to energy threshold
+            return energy > STT_SILENCE_THRESHOLD
 
     try:
         while True:
