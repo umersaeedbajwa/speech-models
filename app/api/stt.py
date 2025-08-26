@@ -13,7 +13,7 @@ load_dotenv()
 
 STT_REPO = os.getenv("STT_REPO")
 STT_PAUSE = int(os.getenv("STT_PAUSE", 1500))  # Ensure integer
-STT_SILENCE_THRESHOLD = int(os.getenv("STT_SILENCE_THRESHOLD", 400))  # Ensure integer
+STT_SILENCE_THRESHOLD = int(os.getenv("STT_SILENCE_THRESHOLD", 100))  # Ensure integer
 
 router = APIRouter()
 
@@ -34,13 +34,27 @@ async def stt_websocket(
     import time
 
     def has_audio_content(audio_data):
-        """Check if audio data contains actual speech (not just silence)"""
+        """Check if audio data contains actual speech using hybrid approach (efficient)"""
         if len(audio_data) == 0:
             return False
+        
         audio_np = np.frombuffer(audio_data, dtype=np.int16)
+        
+        # First filter: energy threshold (fast)
         energy = np.sqrt(np.mean(audio_np.astype(np.float32) ** 2))
-        print(f"Audio energy: {energy}")
-        return energy > STT_SILENCE_THRESHOLD
+        if energy <= STT_SILENCE_THRESHOLD:
+            return False  # Definitely silence
+        
+        if len(audio_data) > 0:
+            small_audio_np = np.frombuffer(audio_data, dtype=np.int16)
+            try:
+                transcription = moonshine.stt((sample_rate, small_audio_np))
+                return transcription and transcription.strip() != ""
+            except:
+                # If STT fails on small chunk, fall back to energy threshold
+                return True
+        
+        return False
 
     try:
         while True:
