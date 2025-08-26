@@ -13,7 +13,7 @@ load_dotenv()
 
 STT_REPO = os.getenv("STT_REPO")
 STT_PAUSE = int(os.getenv("STT_PAUSE", 1500))  # Ensure integer
-STT_SILENCE_THRESHOLD = int(os.getenv("STT_SILENCE_THRESHOLD", 200))  # Ensure integer
+STT_SILENCE_THRESHOLD = int(os.getenv("STT_SILENCE_THRESHOLD", 400))  # Ensure integer
 
 router = APIRouter()
 
