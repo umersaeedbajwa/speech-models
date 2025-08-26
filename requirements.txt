@@ -1,3 +1,4 @@
+
 fastapi
 pytest
 uvicorn
@@ -5,6 +6,7 @@ httpx
 python-dotenv
 websockets
 
+kokoro
 huggingface_hub
 ipython
 soundfile

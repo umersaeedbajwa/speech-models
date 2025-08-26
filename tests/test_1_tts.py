@@ -23,7 +23,7 @@ def test_tts_post_success():
         "language": "en-US",
         "voice": "af_heart",
         "type": "text",
-        "text": "Combined STT and TTS is working now."
+        "text": "Combined STT and TTS is not working yet with JamBonz."
     }
     print("Sending Request:", data)
     start_time = time.time()

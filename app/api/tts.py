@@ -19,7 +19,7 @@ async def synthesize(
     text = tts_request.text
 
     model = get_tts_model()
-    options = KokoroTTSOptions(voice=voice, speed=1.0, lang=language)
+    options = KokoroTTSOptions(voice=voice, speed=1.0, lang=language.lower())
     sample_rate, audio = model.tts(text, options)
 
     if audio is None:

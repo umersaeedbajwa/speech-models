@@ -139,3 +139,26 @@ class KokoroTTSModel(TTSModel):
             except StopAsyncIteration:
                 break
 
+lang_map = {
+    "en-US": "a", "en-GB": "b", "es": "e", "fr-fr": "f", "hi": "h", "it": "i", "ja": "j", "pt-br": "p", "zh": "z"
+}
+
+@lru_cache
+def get_pipeline(language):
+    from kokoro import KPipeline
+    lang_code = lang_map.get(language, "a")
+    return KPipeline(lang_code=lang_code, repo_id="hexgrad/Kokoro-82M")
+
+def synthesize(voice, text, language):
+
+    pipeline = get_pipeline(language)
+    generator = pipeline(text, voice=voice, speed=1, split_pattern=r'\\n+')
+    
+    audio_segments = []
+    for i, (gs, ps, audio) in enumerate(generator):
+        audio_segments.append(audio)
+        
+    audio_concat = np.concatenate(audio_segments)
+    sample_rate = 24000
+    return sample_rate, audio_concat
+
