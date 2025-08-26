@@ -13,6 +13,7 @@ load_dotenv()
 
 STT_REPO = os.getenv("STT_REPO")
 STT_PAUSE = int(os.getenv("STT_PAUSE", 1500))  # Ensure integer
+STT_SILENCE_THRESHOLD = int(os.getenv("STT_SILENCE_THRESHOLD", 200))  # Ensure integer
 
 router = APIRouter()
 
@@ -38,7 +39,7 @@ async def stt_websocket(
             return False
         audio_np = np.frombuffer(audio_data, dtype=np.int16)
         energy = np.sqrt(np.mean(audio_np.astype(np.float32) ** 2))
-        return energy > 100  # Threshold for detecting speech vs silence
+        return energy > STT_SILENCE_THRESHOLD  # Threshold for detecting speech vs silence
 
     try:
         while True:
