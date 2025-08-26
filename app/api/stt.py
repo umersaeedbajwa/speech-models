@@ -5,6 +5,7 @@ from app.auth import get_api_key_ws
 import numpy as np
 from dotenv import load_dotenv
 import json
+import asyncio
 from app.service.stt import get_stt_model
 
 load_dotenv()
@@ -27,23 +28,41 @@ async def stt_websocket(
     language = "en-US"
     sample_rate = 8000
     moonshine = get_stt_model(STT_REPO)
+    last_transcript_time = 0
+    last_audio_activity_time = asyncio.get_event_loop().time()
+    import time
+
+    def has_audio_content(audio_data):
+        """Check if audio data contains actual speech (not just silence)"""
+        if len(audio_data) == 0:
+            return False
+        audio_np = np.frombuffer(audio_data, dtype=np.int16)
+        energy = np.sqrt(np.mean(audio_np.astype(np.float32) ** 2))
+        return energy > 100  # Threshold for detecting speech vs silence
 
     try:
-        last_transmit_idx = 0
         while True:
             message = await websocket.receive()
+            current_time = asyncio.get_event_loop().time()
+            
             if message["type"] == "websocket.receive":
                 if "bytes" in message:
                     # Accumulate audio bytes
                     audio_bytes += message["bytes"]
-                    # Check if enough audio has been received to trigger a final transcription
-                    # STT_PAUSE is in ms, sample_rate is in Hz, 2 bytes per int16 sample
-                    bytes_per_ms = int(sample_rate * 2 / 1000)
-                    while len(audio_bytes) - last_transmit_idx >= STT_PAUSE * bytes_per_ms:
-                        chunk = audio_bytes[last_transmit_idx:last_transmit_idx + STT_PAUSE * bytes_per_ms]
-                        if chunk:
-                            audio_np = np.frombuffer(chunk, dtype=np.int16)
+                    
+                    # Check if this chunk has audio content
+                    if has_audio_content(message["bytes"]):
+                        last_audio_activity_time = current_time
+                    
+                    # Check if we've had silence for STT_PAUSE duration
+                    silence_duration = (current_time - last_audio_activity_time) * 1000  # Convert to ms
+                    if silence_duration >= STT_PAUSE and len(audio_bytes) > last_transcript_time:
+                        new_audio = audio_bytes[last_transcript_time:]
+                        if has_audio_content(new_audio):
+                            audio_np = np.frombuffer(new_audio, dtype=np.int16)
                             transcription = moonshine.stt((sample_rate, audio_np))
+                            print(f"Silence timeout transcription: {transcription}")
+                            
                             await websocket.send_json({
                                 "type": "transcription",
                                 "is_final": True,
@@ -51,7 +70,8 @@ async def stt_websocket(
                                 "language": language,
                                 "channel": 1
                             })
-                            last_transmit_idx += len(chunk)
+                            last_transcript_time = len(audio_bytes)
+                            
                 elif "text" in message:
                     # Handle control messages (e.g., start/stop)
                     control = json.loads(message["text"])
@@ -59,13 +79,18 @@ async def stt_websocket(
                     if control.get("type") == "start":
                         language = control.get("language", "en-US")
                         sample_rate = control.get("sampleRateHz", 8000)
-                        # You can handle other options here
+                        # Reset audio buffer on start
+                        audio_bytes = b""
+                        last_transcript_time = 0
+                        last_audio_activity_time = current_time
                     elif control.get("type") == "stop":
-                        # On stop, send any remaining audio as a final transcript
-                        if len(audio_bytes) > last_transmit_idx:
-                            chunk = audio_bytes[last_transmit_idx:]
-                            audio_np = np.frombuffer(chunk, dtype=np.int16)
+                        # Send final transcript for any remaining audio
+                        if audio_bytes and has_audio_content(audio_bytes[last_transcript_time:]):
+                            new_audio = audio_bytes[last_transcript_time:]
+                            audio_np = np.frombuffer(new_audio, dtype=np.int16)
                             transcription = moonshine.stt((sample_rate, audio_np))
+                            print(f"Final transcription: {transcription}")
+                            
                             await websocket.send_json({
                                 "type": "transcription",
                                 "is_final": True,
