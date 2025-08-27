@@ -7,14 +7,4 @@ python-dotenv
 websockets
 gradio
 
-# FastRTC for real-time voice streaming
-fastrtc[tts,stt,stopword]
-
-kokoro
-huggingface_hub
-ipython
-soundfile
-torch
-kokoro_onnx
-
-useful-moonshine-onnx@git+https://git@github.com/usefulsensors/moonshine.git#subdirectory=moonshine-onnx
+fastrtc[tts,stt,stopword,vad]

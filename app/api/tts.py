@@ -4,6 +4,8 @@ import soundfile as sf
 import io
 from fastapi import Security
 from app.models.schemas import TTSRequest
+from fastrtc import get_tts_model
+from fastrtc.text_to_speech.tts import KokoroTTSOptions
 
 router = APIRouter()
 
@@ -17,9 +19,9 @@ async def synthesize(
     voice = tts_request.voice
     text = tts_request.text
 
-    # model = get_tts_model()
-    # options = {"voice": voice, "speed": 1.0, "lang": language.lower()}
-    # sample_rate, audio = model.tts(text, options)
+    model = get_tts_model("kokoro")
+    options = KokoroTTSOptions(voice=voice, speed=1.0, lang=language.lower())
+    sample_rate, audio = model.tts(text, options)
 
     if audio is None:
         return Response(content=b"", status_code=400, media_type="text/plain")
