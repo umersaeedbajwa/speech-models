@@ -4,7 +4,6 @@ import soundfile as sf
 import io
 from fastapi import Security
 from app.models.schemas import TTSRequest
-from app.service.tts import get_tts_model,KokoroTTSOptions
 
 router = APIRouter()
 

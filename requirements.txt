@@ -5,6 +5,10 @@ uvicorn
 httpx
 python-dotenv
 websockets
+gradio
+
+# FastRTC for real-time voice streaming
+fastrtc[tts,stt,stopword]
 
 kokoro
 huggingface_hub
