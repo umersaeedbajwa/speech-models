@@ -17,9 +17,9 @@ async def synthesize(
     voice = tts_request.voice
     text = tts_request.text
 
-    model = get_tts_model()
-    options = {"voice": voice, "speed": 1.0, "lang": language.lower()}
-    sample_rate, audio = model.tts(text, options)
+    # model = get_tts_model()
+    # options = {"voice": voice, "speed": 1.0, "lang": language.lower()}
+    # sample_rate, audio = model.tts(text, options)
 
     if audio is None:
         return Response(content=b"", status_code=400, media_type="text/plain")
