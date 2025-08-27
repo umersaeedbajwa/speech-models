@@ -135,7 +135,6 @@ async def stt_websocket(
     try:
         while True:
             message = await websocket.receive()
-            
             if message["type"] == "websocket.receive":
                 if "bytes" in message:
                     # Convert bytes to numpy array
@@ -156,6 +155,7 @@ async def stt_websocket(
                         
                 elif "text" in message:
                     control = json.loads(message["text"])
+                    print(f"Control message received: {control}")
                     if control.get("type") == "start":
                         language = control.get("language", "en-US")
                         # Reset state properly
