@@ -4,6 +4,7 @@ import numpy as np
 import json
 import logging
 from fastrtc import get_stt_model
+from starlette.websockets import WebSocketState
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -54,6 +55,7 @@ async def jambonz_stt_websocket(
                             # Initialize STT model
                             stt_model = get_stt_model("moonshine/base")
                             audio_buffer = []
+                            logger.info("STT model initialized")
                                 
                         elif control.get("type") == "stop":
                             logger.info("Stop message received")
@@ -70,6 +72,9 @@ async def jambonz_stt_websocket(
                                     # Perform STT
                                     transcription = stt_model.stt((sample_rate, audio_array))
                                     
+                                    # Add debug log to inspect transcription output
+                                    logger.info(f"Transcription result: {transcription}")
+                                    
                                     if transcription and transcription.strip():
                                         # Send Jambonz-compatible response
                                         response = {
@@ -83,8 +88,17 @@ async def jambonz_stt_websocket(
                                             "language": language
                                         }
                                         
-                                        logger.info(f"Sending final transcription: {response}")
-                                        await websocket.send_json(response)
+                                        # Add debug log to verify buffered audio length
+                                        logger.info(f"Buffered audio length: {len(audio_buffer)}")
+                                        
+                                        # Add check to ensure WebSocket is open before sending
+                                        if websocket.client_state == WebSocketState.CONNECTED:
+                                            try:
+                                                await websocket.send_json(response)
+                                            except Exception as e:
+                                                logger.error(f"Error sending transcription: {e}")
+                                        else:
+                                            logger.error("WebSocket is not connected. Unable to send transcription.")
                                     
                                 except Exception as e:
                                     logger.error(f"Error processing buffered audio: {e}")
