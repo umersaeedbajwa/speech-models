@@ -75,30 +75,36 @@ async def jambonz_stt_websocket(
                                     # Add debug log to inspect transcription output
                                     logger.info(f"Transcription result: {transcription}")
                                     
-                                    if transcription and transcription.strip():
-                                        # Send Jambonz-compatible response
-                                        response = {
-                                            "type": "transcription",
-                                            "is_final": True,
-                                            "alternatives": [{
-                                                "transcript": transcription.strip(),
-                                                "confidence": 1.0
-                                            }],
-                                            "channel": 1,
-                                            "language": language
-                                        }
-                                        
-                                        # Add debug log to verify buffered audio length
-                                        logger.info(f"Buffered audio length: {len(audio_buffer)}")
-                                        
-                                        # Add check to ensure WebSocket is open before sending
-                                        if websocket.client_state == WebSocketState.CONNECTED:
-                                            try:
-                                                await websocket.send_json(response)
-                                            except Exception as e:
-                                                logger.error(f"Error sending transcription: {e}")
-                                        else:
-                                            logger.error("WebSocket is not connected. Unable to send transcription.")
+                                    # Log the first 100 bytes of audio data for debugging
+                                    logger.info(f"First 100 bytes of audio: {audio_buffer[:100]}")
+                                    
+                                    # Check if transcription is empty and log a warning
+                                    if not transcription.strip():
+                                        logger.warning("Transcription is empty. Check audio quality or format.")
+                                    
+                                    # Send Jambonz-compatible response
+                                    response = {
+                                        "type": "transcription",
+                                        "is_final": True,
+                                        "alternatives": [{
+                                            "transcript": transcription.strip(),
+                                            "confidence": 1.0
+                                        }],
+                                        "channel": 1,
+                                        "language": language
+                                    }
+                                    
+                                    # Add debug log to verify buffered audio length
+                                    logger.info(f"Buffered audio length: {len(audio_buffer)}")
+                                    
+                                    # Ensure WebSocket is open before sending the transcription
+                                    if websocket.client_state == WebSocketState.CONNECTED:
+                                        try:
+                                            await websocket.send_json(response)
+                                        except Exception as e:
+                                            logger.error(f"Error sending transcription: {e}")
+                                    else:
+                                        logger.error("WebSocket is not connected. Unable to send transcription.")
                                     
                                 except Exception as e:
                                     logger.error(f"Error processing buffered audio: {e}")
