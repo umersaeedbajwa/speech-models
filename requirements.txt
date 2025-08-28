@@ -8,3 +8,4 @@ websockets
 gradio
 
 fastrtc[tts,stt,stopword,vad]
+webrtcvad
