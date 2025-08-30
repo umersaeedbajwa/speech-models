@@ -4,7 +4,6 @@ import numpy as np
 import json
 import logging
 from fastrtc import get_stt_model
-from starlette.websockets import WebSocketState
 import webrtcvad
 
 logging.basicConfig(level=logging.INFO)
@@ -16,7 +15,7 @@ logger.info("STT model initialized")
 router = APIRouter()
 
 
-@router.websocket("/")
+@router.websocket("/stt")
 async def jambonz_stt_websocket(
     websocket: WebSocket,
     authorization: str = Security(get_api_key_ws)

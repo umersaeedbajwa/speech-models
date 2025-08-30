@@ -52,7 +52,37 @@ uvicorn app.main:app --reload
   pytest tests/test_2_stt.py -s
   ```
 
+## Running TTS and STT Services Separately or Combined
+
+You can run the TTS and STT APIs either together (combined) or as separate services.
+
+### Combined Service (default)
+This exposes both `/tts` and `/stt` endpoints from a single FastAPI app:
+
+```powershell
+uvicorn app.main:app --reload
+```
+
+- TTS endpoint:   `http://localhost:8000/tts/...`
+- STT endpoint:   `http://localhost:8000/stt/...`
+
+### TTS Service Only
+Runs only the TTS API on a separate port (e.g., 8001):
+
+```powershell
+uvicorn app.tts_service:app --reload --port 8001
+```
+- TTS endpoint:   `http://localhost:8001/tts/...`
+
+### STT Service Only
+Runs only the STT API on a separate port (e.g., 8002):
+
+```powershell
+uvicorn app.stt_service:app --reload --port 8002
+```
+- STT endpoint:   `http://localhost:8002/stt/...`
+
 ---
 
 **Tip:**  
-Update `requirements.txt` as needed to keep
+Update `requirements.txt` as needed to keep your dependencies up to date.

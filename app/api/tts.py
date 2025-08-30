@@ -10,7 +10,7 @@ import time
 
 router = APIRouter()
 
-@router.post("/", status_code=status.HTTP_200_OK)
+@router.post("/tts", status_code=status.HTTP_200_OK)
 async def synthesize(
     tts_request: TTSRequest,
     authorization: str = Security(get_api_key)
